@@ -10,4 +10,4 @@ mongodb:
 schoolapp-api:
   vault:
     status: 'disable'
-    kind: 'injector'
+    kind: 'disable'
