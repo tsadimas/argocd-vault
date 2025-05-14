@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: app
+ labels:
+   app: demo
+spec:
+ selector:
+   matchLabels:
+     app: demo
+ replicas: 1
+ template:
+   metadata:
+     annotations:
+     labels:
+       app: demo
+   spec:
+     serviceAccountName: vault-serviceaccount
+     containers:
+       - name: app
+         image: busybox
+         command: ["sleep", "3600"]
+         env:
+           - name: DB_USER
+             valueFrom:
+               secretKeyRef:
+                 name: pg-secret-k8s
+                 key: username
+           - name: DB_PASS
+             valueFrom:
+               secretKeyRef:
+                 name: pg-secret-k8s
+                 key: password
+         volumeMounts:
+           - name: vault-db-creds
+             mountPath: '/mnt/secrets-store'
+             readOnly: true
+     volumes:
+       - name: vault-db-creds
+         csi:
+           driver: secrets-store.csi.k8s.io
+           readOnly: true
+           volumeAttributes:
+             secretProviderClass: "vault-pg-secret"
